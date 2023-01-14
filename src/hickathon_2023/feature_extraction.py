@@ -1,13 +1,7 @@
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator
-
-
-def compute_year(df):
-    df["year"] = pd.to_datetime(df["consumption_measurement_date"]).dt.year
-    return df
 
 
 def processing_bearing_wall(df):
@@ -75,7 +69,7 @@ def processing_main_heating_type(df):
 
     df["main_heating_device"] = df["main_heat_generators"].apply(aux_device)
     df["main_heating_fuel"] = df["main_heat_generators"].apply(aux_fuel)
-    return df.drop("main_heating_generators", axis=1)
+    return df.drop("main_heat_generators", axis=1)
 
 
 def processing_balcony_depth(df):
@@ -163,7 +157,7 @@ def processing_water_heating_energy_source(df):
     df["water_heating_coal"] = df["water_heating_energy_source"].apply(
         lambda x: type(x) != float and "coal" in x
     )
-    return df
+    return df.drop("water_heating_energy_source", axis=1)
 
 
 def processing_ventilation_type(df):
@@ -225,22 +219,22 @@ def processing_building_class(df):
 
 
 def processing_heating_energy_source(df):
-    df["heat_source_oil"] = df["heating_energy_source"].apply(
+    df["heating_source_oil"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and ("oil" in x or "fuel" in x or "fioul" in x)
     )
-    df["heat_source_gas"] = df["heating_energy_source"].apply(
+    df["heating_source_gas"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and ("gas" in x or "butane" in x)
     )
-    df["heat_source_electricity"] = df["heating_energy_source"].apply(
+    df["heating_source_electricity"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and "elec" in x
     )
-    df["heat_source_wood"] = df["heating_energy_source"].apply(
+    df["heating_source_wood"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and "wood" in x
     )
-    df["heat_source_network"] = df["heating_energy_source"].apply(
+    df["heating_source_network"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and ("network" in x or "reseau" in x)
     )
-    df["heat_source_coal"] = df["heating_energy_source"].apply(
+    df["heating_source_coal"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and ("coal" in x or "charbon" in x)
     )
     return df.drop("heating_energy_source", axis=1)
@@ -345,7 +339,7 @@ def processing_outer_wall_materials(df):
     df["outer_wall_hollow"] = df["outer_wall_materials"].apply(
         lambda x: type(x) != float and "hollow" in x
     )
-    return df
+    return df.drop("outer_wall_materials", axis=1)
 
 
 def processing_years(df):
@@ -379,7 +373,7 @@ def processing_years(df):
     )
     df["lower_year_building"] = df["lower_year_building"].fillna(df["building_year"])
     df["upper_year_building"] = df["upper_year_building"].fillna(df["building_year"])
-    return df
+    return df.drop("building_period", axis=1)
 
 
 def processing_upper_conductivity(df):
@@ -396,7 +390,7 @@ def processing_upper_conductivity(df):
     df["upper_floor_thermal_conductivity"] = df[
         "upper_floor_thermal_conductivity"
     ].fillna(df["upper_floor_thermal_conductivity"].median())
-    return df
+    return df.drop("upper_floor_material", axis=1)
 
 
 def processing_lower_conductivity(df):
@@ -440,7 +434,7 @@ def processing_outer_thickness(df):
 
 def processing_upper_floor_adjacency_type(df):
     df["upper_floor_LNC"] = df["upper_floor_adjacency_type"] == "LNC"
-    return df
+    return df.drop("upper_floor_adjacency_type", axis=1)
 
 
 def processing_radon(df):
@@ -450,16 +444,16 @@ def processing_radon(df):
 
 
 def processing_window_orientation(df):
-    df["north_window"] = df["window_orientation"].apply(
+    df["window_orientation_north"] = df["window_orientation"].apply(
         lambda x: type(x) != float and ("north" in x or "nord" in x)
     )
-    df["east_window"] = df["window_orientation"].apply(
+    df["window_orientation_east"] = df["window_orientation"].apply(
         lambda x: type(x) != float and ("east" in x or "est" in x)
     )
-    df["south_window"] = df["window_orientation"].apply(
+    df["window_orientation_south"] = df["window_orientation"].apply(
         lambda x: type(x) != float and ("south" in x or "sud" in x)
     )
-    df["west_window"] = df["window_orientation"].apply(
+    df["window_orientation_west"] = df["window_orientation"].apply(
         lambda x: type(x) != float and ("west" in x or "ouest" in x)
     )
     return df.drop("window_orientation", axis=1)
@@ -496,38 +490,37 @@ class FeatureExtractor(BaseEstimator):
 
     def transform(self, X):
         processing_functions_list = [
-            compute_year,
-            processing_bearing_wall,
-            processing_main_heating_type,
-            processing_balcony_depth,
-            processing_window_glazing_type,
-            processing_window_frame_material,
-            processing_window_filling_type,
-            processing_water_heating_type,
-            processing_heating_type,
-            processing_water_heaters,
-            processing_heating_energy_source,
-            processing_water_heating_energy_source,
-            processing_ventilation_type,
-            processing_wall_insulation_type,
-            processing_building_category,
-            processing_building_class,
-            processing_heat_generators,
             processing_additional_heat_generators,
             processing_additional_water_heaters,
-            processing_renewable_energy_sources,
-            processing_crossing_building,
+            processing_balcony_depth,
+            processing_bearing_wall,
+            processing_building_category,
+            processing_building_class,
             processing_consumption_measurement_date,
-            processing_outer_wall_materials,
-            processing_years,
-            processing_upper_conductivity,
+            processing_crossing_building,
+            processing_heat_generators,
+            processing_heating_energy_source,
+            processing_heating_type,
             processing_lower_conductivity,
-            processing_thermal_inertia,
-            processing_outer_thickness,
-            processing_upper_floor_adjacency_type,
-            processing_radon,
-            processing_window_orientation,
+            processing_main_heating_type,
             processing_nb_parking_spaces,
+            processing_outer_thickness,
+            processing_outer_wall_materials,
+            processing_radon,
+            processing_renewable_energy_sources,
+            processing_thermal_inertia,
+            processing_upper_conductivity,
+            processing_upper_floor_adjacency_type,
+            processing_ventilation_type,
+            processing_wall_insulation_type,
+            processing_water_heaters,
+            processing_water_heating_energy_source,
+            processing_water_heating_type,
+            processing_window_filling_type,
+            processing_window_frame_material,
+            processing_window_glazing_type,
+            processing_window_orientation,
+            processing_years,
         ]
         X = X.copy()
         for function in processing_functions_list:
