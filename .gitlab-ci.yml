@@ -1,0 +1,25 @@
+image: python:3.8.13
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+quality:
+  stage: quality
+  script:
+    - pip install pre-commit
+    - pre-commit run -a --show-diff-on-failure
+
+test:
+  stage: test
+  script:
+    - pip install .
+    - pip install pytest
+    - pytest
+
+stages:
+  - quality
+  - test
