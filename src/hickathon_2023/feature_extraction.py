@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
@@ -296,6 +298,56 @@ def processing_renewable_energy_sources(df):
     return df
 
 
+def processing_crossing_building(df):
+    values_cross = {
+        "crossing east west": 0,
+        "through all way": 0,
+        "crossing north south": 0,
+        "nan": "nan",
+        "through 90°": 0,
+        "not through": 0,
+        "all through crossing (weak)": 1,
+        "east-west crossing (weak)": 1,
+        "90° crossing (weak)": 1,
+        "north-south crossing (weak)": 1,
+    }
+    values_fronts = {
+        "crossing east west": 2,
+        "through all way": 4,
+        "crossing north south": 2,
+        "nan": 0,
+        "through 90°": 2,
+        "not through": 1,
+        "all through crossing (weak)": 4,
+        "east-west crossing (weak)": 2,
+        "90° crossing (weak)": 2,
+        "north-south crossing (weak)": 2,
+    }
+
+    df["number_of_fronts"] = df["is_crossing_building"].map(values_fronts)
+    df["is_crossing_building"] = df["is_crossing_building"].map(values_cross)
+    return df
+
+
+def processing_consumption_measurement_date(df):
+    zero = datetime.strptime(df["consumption_measurement_date"].min(), "%Y-%m-%d")
+    one = datetime.strptime(df["consumption_measurement_date"].max(), "%Y-%m-%d")
+
+    def aux(x):
+        date = datetime.strptime(x, "%Y-%m-%d")
+        return (date - zero).days / (one - zero).days
+
+    df["consumption_measurement_date"] = df["consumption_measurement_date"].apply(aux)
+    return df
+
+
+def processing_outer_wall_materials(df):
+    df["outer_wall_hollow"] = df["outer_wall_materials"].apply(
+        lambda x: type(x) != float and "hollow" in x
+    )
+    return df
+
+
 class FeatureExtractor(BaseEstimator):
     def fit(self, X, y):
         return self
@@ -322,6 +374,9 @@ class FeatureExtractor(BaseEstimator):
             processing_additional_heat_generators,
             processing_additional_water_heaters,
             processing_renewable_energy_sources,
+            processing_crossing_building,
+            processing_consumption_measurement_date,
+            processing_outer_wall_materials,
         ]
         X = X.copy()
         for function in processing_functions_list:
