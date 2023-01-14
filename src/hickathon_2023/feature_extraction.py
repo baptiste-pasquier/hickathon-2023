@@ -348,6 +348,148 @@ def processing_outer_wall_materials(df):
     return df
 
 
+def processing_years(df):
+    dic_year_lower = {
+        "1949-1970": 1949,
+        "1970-1988": 1970,
+        "1989-1999": 1989,
+        "2000-2005": 2000,
+        "2006-2012": 2006,
+        "<1948": np.nan,
+        ">2012": 2012,
+        "bad sup": np.nan,
+    }
+    dic_year_upper = {
+        "1949-1970": 1970,
+        "1970-1988": 1988,
+        "1989-1999": 1999,
+        "2000-2005": 2005,
+        "2006-2012": 2012,
+        "<1948": 1948,
+        ">2012": 2020,
+        "bad sup": np.nan,
+    }
+    df["lower_year_building"] = df["building_period"].map(dic_year_lower)
+    df["upper_year_building"] = df["building_period"].map(dic_year_upper)
+    df["building_year"] = (
+        df["building_year"]
+        .fillna(df["lower_year_building"])
+        .fillna(df["upper_year_building"])
+        .fillna(df["building_year"].mean())
+    )
+    df["lower_year_building"] = df["lower_year_building"].fillna(df["building_year"])
+    df["upper_year_building"] = df["upper_year_building"].fillna(df["building_year"])
+    return df
+
+
+def processing_upper_conductivity(df):
+    df["upper_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
+        df.groupby(["upper_floor_insulation_type"])[
+            "upper_floor_thermal_conductivity"
+        ].transform("median")
+    )
+    df["upper_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
+        df.groupby(["upper_floor_material"])[
+            "upper_floor_thermal_conductivity"
+        ].transform("median")
+    )
+    df["upper_floor_thermal_conductivity"] = df[
+        "upper_floor_thermal_conductivity"
+    ].fillna(df["upper_floor_thermal_conductivity"].median())
+    return df
+
+
+def processing_lower_conductivity(df):
+    df["lowe_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
+        df.groupby(["lower_floor_insulation_type"])[
+            "lowe_floor_thermal_conductivity"
+        ].transform("median")
+    )
+    df["lowe_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
+        df.groupby(["lower_floor_material"])[
+            "lowe_floor_thermal_conductivity"
+        ].transform("median")
+    )
+    df["lowe_floor_thermal_conductivity"] = df[
+        "lowe_floor_thermal_conductivity"
+    ].fillna(df["lowe_floor_thermal_conductivity"].median())
+    return df
+
+
+def processing_thermal_inertia(df):
+    dic_inertia = {"low": 1, "medium": 2, "high": 3, "very high": 4}
+    df["thermal_inertia"] = df["thermal_inertia"].map(dic_inertia).fillna(1)
+    return df
+
+
+def processing_outer_thickness(df):
+    def get_thickness(thickness):
+        try:
+            return int(thickness[:2])
+        except ValueError:
+            return 24.4
+
+    mean_thickness = str(
+        df["outer_wall_thickness"].dropna().apply(get_thickness).mean()
+    )
+    df["outer_wall_thickness"] = (
+        df["outer_wall_thickness"].fillna(mean_thickness).apply(get_thickness)
+    )
+    return df
+
+
+def processing_upper_floor_adjacency_type(df):
+    df["upper_floor_LNC"] = df["upper_floor_adjacency_type"] == "LNC"
+    return df
+
+
+def processing_radon(df):
+    dic_radon = {"low": 0, "medium": 1, "high": 2}
+    df["radon_risk_level"] = df["radon_risk_level"].map(dic_radon).fillna(1)
+    return df
+
+
+def processing_window_orientation(df):
+    df["north_window"] = df["window_orientation"].apply(
+        lambda x: type(x) != float and ("north" in x or "nord" in x)
+    )
+    df["east_window"] = df["window_orientation"].apply(
+        lambda x: type(x) != float and ("east" in x or "est" in x)
+    )
+    df["south_window"] = df["window_orientation"].apply(
+        lambda x: type(x) != float and ("south" in x or "sud" in x)
+    )
+    df["west_window"] = df["window_orientation"].apply(
+        lambda x: type(x) != float and ("west" in x or "ouest" in x)
+    )
+    return df.drop("window_orientation", axis=1)
+
+
+def processing_nb_parking_spaces(df):
+    df["nb_parking_spaces"] = df.mask(
+        (df["building_type"] == "House") & (df["nb_parking_spaces"] > 4), 4
+    )
+    return df
+
+
+def processing_roof_materials(df):
+    values = {
+        "TILES - ZINC ALUMINUM": "TILES",
+        "TILES - OTHERS": "TILES",
+        "CONCRETE - TILES": "CONCRETE",
+        "SLATES - ZINC ALUMINUM": "SLATE",
+        "CONCRETE - OTHERS": "CONCRETE",
+        "SLATE - TILES": "SLATE",
+        "SLATE - OTHERS": "SLATE",
+        "ZINC ALUMINUM - OTHERS": "ZINC",
+        "CONCRETE - ZINC ALUMINUM": "CONCRETE",
+        "SLATE - CONCRETE": "SLATE",
+        "INDETERMINATE": "OTHERS",
+    }
+    df["roof_material"] = df["roof_material"].map(values).fillna("OTHERS")
+    return df
+
+
 class FeatureExtractor(BaseEstimator):
     def fit(self, X, y):
         return self
@@ -377,6 +519,15 @@ class FeatureExtractor(BaseEstimator):
             processing_crossing_building,
             processing_consumption_measurement_date,
             processing_outer_wall_materials,
+            processing_years,
+            processing_upper_conductivity,
+            processing_lower_conductivity,
+            processing_thermal_inertia,
+            processing_outer_thickness,
+            processing_upper_floor_adjacency_type,
+            processing_radon,
+            processing_window_orientation,
+            processing_nb_parking_spaces,
         ]
         X = X.copy()
         for function in processing_functions_list:
