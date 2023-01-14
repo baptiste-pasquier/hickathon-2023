@@ -161,3 +161,4 @@ cython_debug/
 
 datasets/test/
 datasets/train/
+**/submission_sent.csv
