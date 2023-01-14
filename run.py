@@ -35,7 +35,7 @@ if __name__ == "__main__":
     log.info("Fitting model")
     model.fit(X_train, y_train)
 
-    log.info("Predicting")
+    log.info("Calculating predictions")
     y_test_pred = model.predict(X_test)
 
     log.info("Exporting predictions")
