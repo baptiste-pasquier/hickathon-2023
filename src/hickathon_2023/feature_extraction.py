@@ -80,12 +80,12 @@ def processing_balcony_depth(df):
 
 def processing_window_glazing_type(df):
     values = {
-        np.nan: 0,
-        "single glazing": 1,
-        "double glazing": 2,
-        "triple glazing": 3,
-        "glass block or polycarbonate": 3,
-        "overglazing": 3,
+        np.nan: 1,  # if nan assign to most frequent class
+        "single glazing": 0,
+        "double glazing": 1,
+        "triple glazing": 2,
+        "glass block or polycarbonate": 2,
+        "overglazing": 2,
     }
     df["window_glazing_type"] = df["window_glazing_type"].map(values)
     return df
@@ -132,9 +132,15 @@ def processing_heating_type(df):
 
 
 def processing_water_heaters(df):
-    df["water_heater_boiler"] = df["water_heaters"].apply(lambda x: x.count("boiler"))
-    df["water_heater_tank"] = df["water_heaters"].apply(lambda x: x.count("tank"))
-    df["water_heater_heater"] = df["water_heaters"].apply(lambda x: x.count("heater"))
+    df["water_heater_boiler"] = df["water_heaters"].apply(
+        lambda x: x.count("boiler") if type(x) == str else 0
+    )
+    df["water_heater_tank"] = df["water_heaters"].apply(
+        lambda x: x.count("tank") if type(x) == str else 0
+    )
+    df["water_heater_heater"] = df["water_heaters"].apply(
+        lambda x: x.count("heater") if type(x) == str else 0
+    )
     return df.drop("water_heaters", axis=1)
 
 
@@ -203,18 +209,24 @@ def processing_wall_insulation_type(df):
 
 def processing_building_category(df):
     df["building_category_condo"] = df["building_category"].apply(
-        lambda x: x.count("condo")
+        lambda x: x.count("condo") if type(x) == str else 0
     )
     df["building_category_house"] = df["building_category"].apply(
-        lambda x: x.count("house")
+        lambda x: x.count("house") if type(x) == str else 0
     )
     return df.drop("building_category", axis=1)
 
 
 def processing_building_class(df):
-    df["building_class_indiv"] = df["building_class"].apply(lambda x: x.count("in"))
-    df["building_class_2_to_11"] = df["building_class"].apply(lambda x: x.count("11"))
-    df["building_class_12_plus"] = df["building_class"].apply(lambda x: x.count("12"))
+    df["building_class_indiv"] = df["building_class"].apply(
+        lambda x: x.count("in") if type(x) == str else 0
+    )
+    df["building_class_2_to_11"] = df["building_class"].apply(
+        lambda x: x.count("11") if type(x) == str else 0
+    )
+    df["building_class_12_plus"] = df["building_class"].apply(
+        lambda x: x.count("12") if type(x) == str else 0
+    )
     return df.drop("building_class", axis=1)
 
 
@@ -242,19 +254,19 @@ def processing_heating_energy_source(df):
 
 def processing_heat_generators(df):
     df["heat_generators_boiler"] = df["heat_generators"].apply(
-        lambda x: x.count("boiler")
+        lambda x: x.count("boiler") if type(x) == str else 0
     )
     df["heat_generators_stove"] = df["heat_generators"].apply(
-        lambda x: x.count("stove")
+        lambda x: x.count("stove") if type(x) == str else 0
     )
     df["heat_generators_solar"] = df["heat_generators"].apply(
-        lambda x: x.count("solar")
+        lambda x: x.count("solar") if type(x) == str else 0
     )
     df["heat_generators_electric"] = df["heat_generators"].apply(
-        lambda x: x.count("electric")
+        lambda x: x.count("electric") if type(x) == str else 0
     )
     df["heat_generators_heat_pump"] = df["heat_generators"].apply(
-        lambda x: x.count("pump")
+        lambda x: x.count("pump") if type(x) == str else 0
     )
     return df.drop("heat_generators", axis=1)
 
@@ -287,7 +299,7 @@ def processing_additional_water_heaters(df):
 
 def processing_renewable_energy_sources(df):
     df["renewable_energy_sources"] = df["renewable_energy_sources"].apply(
-        lambda x: 1 + x.count("+") if type(x) != float else 0
+        lambda x: 1 + x.count("+") if type(x) == str else 0
     )
     return df
 
@@ -297,7 +309,6 @@ def processing_crossing_building(df):
         "crossing east west": 0,
         "through all way": 0,
         "crossing north south": 0,
-        "nan": "nan",
         "through 90°": 0,
         "not through": 0,
         "all through crossing (weak)": 1,
@@ -309,7 +320,6 @@ def processing_crossing_building(df):
         "crossing east west": 2,
         "through all way": 4,
         "crossing north south": 2,
-        "nan": 0,
         "through 90°": 2,
         "not through": 1,
         "all through crossing (weak)": 4,
@@ -324,8 +334,8 @@ def processing_crossing_building(df):
 
 
 def processing_consumption_measurement_date(df):
-    zero = datetime.strptime(df["consumption_measurement_date"].min(), "%Y-%m-%d")
-    one = datetime.strptime(df["consumption_measurement_date"].max(), "%Y-%m-%d")
+    zero = datetime.strptime("2013-01-01", "%Y-%m-%d")
+    one = datetime.strptime("2021-01-01", "%Y-%m-%d")
 
     def aux(x):
         date = datetime.strptime(x, "%Y-%m-%d")
