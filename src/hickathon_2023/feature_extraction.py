@@ -425,7 +425,7 @@ def processing_thermal_inertia(df):
 def processing_outer_thickness(df):
     def get_thickness(thickness):
         try:
-            return int(thickness[:2])
+            return float(thickness[:2])
         except ValueError:
             return 24.4
 
