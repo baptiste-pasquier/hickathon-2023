@@ -21,15 +21,35 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         return X[self.features]
 
 
+def preprocess_thermal_intertia(df):
+    dic_inertia = {"low": 1, "medium": 2, "high": 3, "very high": 4}
+    df["thermal_inertia"] = df["thermal_inertia"].replace(dic_inertia)
+    return df
+
+
+class DataProcessing(BaseEstimator):
+    def fit(self, X, y):
+        return self
+
+    def transform(self, X):
+        X = X.copy()
+        X = preprocess_thermal_intertia(X)
+        return X
+
+
 def get_data_preprocessor():
 
-    selector = FeatureSelector(features=["year", "has_air_conditioning"])
+    preprocess = DataProcessing()
+    selector = FeatureSelector(
+        features=["year", "living_area_sqft", "has_air_conditioning", "thermal_inertia"]
+    )
     scaler = ColumnTransformer(
-        [("scaler", StandardScaler(), ["year"])], remainder="passthrough"
+        [("scaler", StandardScaler(), ["living_area_sqft"])], remainder="passthrough"
     )
 
     pipe = Pipeline(
         [
+            ("preprocess", preprocess),
             ("selector", selector),
             ("scaler", scaler),
         ]
