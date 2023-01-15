@@ -41,17 +41,17 @@ def processing_bearing_wall(df):
 def processing_main_heating_type(df):
     def aux_device(x):
         if "boil" in x:
-            return "bo"
+            return "boil"
         elif "pump" in x:
-            return "hp"
+            return "pump"
         elif "stove" in x:
-            return "st"
+            return "stove"
         elif "radia" in x:
-            return "ra"
+            return "radia"
         elif "joule" in x:
-            return "jo"
+            return "joule"
         else:
-            return "ot"
+            return "other"
 
     def aux_fuel(x):
         if "gas" in x or "butane" in x:
@@ -59,16 +59,18 @@ def processing_main_heating_type(df):
         elif "oil " in x:
             return "oil"
         elif "solar" in x:
-            return "sol"
+            return "solar"
         elif "wood" in x:
-            return "woo"
+            return "wood"
         elif "coal" in x or "charb" in x:
-            return "coa"
+            return "coal"
         else:
-            return "oth"
+            return "other"
 
-    df["main_heating_device"] = df["main_heat_generators"].apply(aux_device)
-    df["main_heating_fuel"] = df["main_heat_generators"].apply(aux_fuel)
+    df["main_heating_device"] = (
+        df["main_heat_generators"].apply(aux_device).fillna("other")
+    )
+    df["main_heating_fuel"] = df["main_heat_generators"].apply(aux_fuel).fillna("other")
     return df.drop("main_heat_generators", axis=1)
 
 
@@ -113,9 +115,9 @@ def processing_window_filling_type(df):
 
 def processing_water_heating_type(df):
     values = {
-        np.nan: 0,
-        "individual": 0,
-        "collective": 1,
+        np.nan: False,
+        "individual": False,
+        "collective": True,
     }  # fill nan with the most frequent class
     df["water_heating_type"] = df["water_heating_type"].map(values)
     return df
@@ -123,9 +125,9 @@ def processing_water_heating_type(df):
 
 def processing_heating_type(df):
     values = {
-        np.nan: 0,
-        "individual": 0,
-        "collective": 1,
+        np.nan: False,
+        "individual": False,
+        "collective": True,
     }  # fill nan with the most frequent class
     df["heating_type"] = df["heating_type"].map(values)
     return df
@@ -168,6 +170,7 @@ def processing_water_heating_energy_source(df):
 
 def processing_ventilation_type(df):
     values = {
+        np.nan: 0,
         "humidity sensitive mechanical gas ventilation": 0,
         "Double flow mechanical ventilation with exchanger": 0,
         "Humidity sensitive mechanical exhaust ventilation and air inlets": 0,
@@ -305,18 +308,8 @@ def processing_renewable_energy_sources(df):
 
 
 def processing_crossing_building(df):
-    values_cross = {
-        "crossing east west": 0,
-        "through all way": 0,
-        "crossing north south": 0,
-        "through 90°": 0,
-        "not through": 0,
-        "all through crossing (weak)": 1,
-        "east-west crossing (weak)": 1,
-        "90° crossing (weak)": 1,
-        "north-south crossing (weak)": 1,
-    }
     values_fronts = {
+        np.nan: 2,
         "crossing east west": 2,
         "through all way": 4,
         "crossing north south": 2,
@@ -327,7 +320,18 @@ def processing_crossing_building(df):
         "90° crossing (weak)": 2,
         "north-south crossing (weak)": 2,
     }
-
+    values_cross = {
+        np.nan: False,
+        "crossing east west": False,
+        "through all way": False,
+        "crossing north south": False,
+        "through 90°": False,
+        "not through": False,
+        "all through crossing (weak)": True,
+        "east-west crossing (weak)": True,
+        "90° crossing (weak)": True,
+        "north-south crossing (weak)": True,
+    }
     df["number_of_fronts"] = df["is_crossing_building"].map(values_fronts)
     df["is_crossing_building"] = df["is_crossing_building"].map(values_cross)
     return df
@@ -375,6 +379,7 @@ def processing_years(df):
     }
     df["lower_year_building"] = df["building_period"].map(dic_year_lower)
     df["upper_year_building"] = df["building_period"].map(dic_year_upper)
+    df["building_year"] = df["building_year"].astype(np.float64)
     df["building_year"] = (
         df["building_year"]
         .fillna(df["lower_year_building"])
@@ -421,8 +426,8 @@ def processing_lower_conductivity(df):
 
 
 def processing_thermal_inertia(df):
-    dic_inertia = {"low": 1, "medium": 2, "high": 3, "very high": 4}
-    df["thermal_inertia"] = df["thermal_inertia"].map(dic_inertia).fillna(1)
+    dic_inertia = {"low": 0, "medium": 1, "high": 2, "very high": 3}
+    df["thermal_inertia"] = df["thermal_inertia"].map(dic_inertia).fillna(0)
     return df
 
 
@@ -431,7 +436,7 @@ def processing_outer_thickness(df):
         try:
             return float(thickness[:2])
         except ValueError:
-            return 24.4
+            return 24
 
     mean_thickness = str(
         df["outer_wall_thickness"].dropna().apply(get_thickness).mean()
@@ -472,12 +477,13 @@ def processing_window_orientation(df):
 def processing_nb_parking_spaces(df):
     df["nb_parking_spaces"] = df.mask(
         (df["building_type"] == "House") & (df["nb_parking_spaces"] > 4), 4
-    )
+    ).fillna(0)
     return df
 
 
 def processing_roof_materials(df):
     values = {
+        np.nan: "OTHERS",
         "TILES - ZINC ALUMINUM": "TILES",
         "TILES - OTHERS": "TILES",
         "CONCRETE - TILES": "CONCRETE",
@@ -518,6 +524,7 @@ class FeatureExtractor(BaseEstimator):
             processing_outer_wall_materials,
             processing_radon,
             processing_renewable_energy_sources,
+            processing_roof_materials,
             processing_thermal_inertia,
             processing_upper_conductivity,
             processing_upper_floor_adjacency_type,

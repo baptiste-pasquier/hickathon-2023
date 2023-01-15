@@ -15,7 +15,6 @@ building_year
 clay_risk_level
 consumption_measurement_date
 has_air_conditioning
-has_balcony
 heat_generators
 heating_energy_source
 heating_type

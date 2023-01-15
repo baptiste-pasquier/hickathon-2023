@@ -3,15 +3,11 @@ building_type
 building_use_type_code
 clay_risk_level
 heating_type
-lower_floor_adjacency_type
-lower_floor_insulation_type
-lower_floor_material
 main_heating_device
 main_heating_fuel
 radon_risk_level
 roof_material
 thermal_inertia
-upper_floor_insulation_type
 ventilation_type
 water_heating_type
 window_filling_type

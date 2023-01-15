@@ -1,6 +1,8 @@
 import logging
 
+import numpy as np
 import pandas as pd
+import sklearn.impute
 import sklearn.pipeline
 from sklearn.base import clone
 from sklearn.pipeline import _fit_transform_one
@@ -12,6 +14,12 @@ log = logging.getLogger(__name__)
 
 def load_data(X_path, y_path=None, y_feature=None):
     df_X = pd.read_csv(X_path, low_memory=False)
+
+    for column in df_X.columns:
+        if df_X[column].dtype == np.int64:
+            df_X[column] = df_X[column].astype(np.int16)
+        if df_X[column].dtype == np.float64:
+            df_X[column] = df_X[column].astype(np.float32)
 
     if y_path:
         if y_feature is None:
@@ -78,3 +86,31 @@ class Pipeline(sklearn.pipeline.Pipeline):
             if isinstance(X, pd.DataFrame):
                 log.debug(f"Dataset after {name} : features {X.columns.tolist()}")
         return X
+
+
+# class SimpleImputer(sklearn.impute.SimpleImputer):
+#     """docstring for SimpleImputer."""
+
+#     def __init__(
+#         self,
+#         *,
+#         missing_values=np.nan,
+#         strategy="mean",
+#         fill_value=None,
+#         verbose="deprecated",
+#         copy=True,
+#         add_indicator=False,
+#     ):
+#         super(SimpleImputer, self).__init__(
+#             missing_values=missing_values,
+#             strategy=strategy,
+#             fill_value=fill_value,
+#             verbose=verbose,
+#             copy=copy,
+#             add_indicator=add_indicator,
+#         )
+
+#         def transform(self, X):
+#             X_inputed = super().transform(X)
+#             features_names = super().get_feature_names_out()
+#             return pd.DataFrame(X_inputed, columns=features_names)
