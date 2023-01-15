@@ -1,4 +1,4 @@
-from sklearn.linear_model import LinearRegression
+import xgboost
 
 from hickathon_2023.data_preprocessing import get_data_preprocessor
 from hickathon_2023.feature_extraction import FeatureExtractor
@@ -9,7 +9,16 @@ def get_model():
 
     feature_extractor = FeatureExtractor()
     data_preprocessor = get_data_preprocessor()
-    regressor = LinearRegression()
+
+    regressor = xgboost.XGBRegressor(
+        n_estimators=2000,
+        max_depth=5,
+        eta=0.2,
+        subsample=0.7,
+        colsample_bytree=0.8,
+        max_leaves=20,
+        n_jobs=-1,
+    )
 
     model = Pipeline(
         [
