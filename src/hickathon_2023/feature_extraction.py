@@ -74,6 +74,57 @@ def processing_main_heating_type(df):
     return df.drop("main_heat_generators", axis=1)
 
 
+def processing_main_water_heaters(df):
+    def aux_device(x):
+        if type(x) == str:
+            if "boil" in x:
+                return "bo"
+            elif "pump" in x:
+                return "hp"
+            elif "joule" in x:
+                return "jo"
+        return "ot"
+
+    def aux_fuel(x):
+        if type(x) == str:
+            if "gas" in x or "butane" in x:
+                return "gas"
+            elif "oil " in x:
+                return "oil"
+            elif "solar" in x:
+                return "sol"
+            elif "wood" in x:
+                return "woo"
+            elif "coal" in x or "charb" in x:
+                return "coa"
+            elif "elec" in x:
+                return "ele"
+        return "oth"
+
+    df["main_water_heating_device"] = df["main_water_heaters"].apply(aux_device)
+    df["main_water_heating_fuel"] = df["main_water_heaters"].apply(aux_fuel)
+    return df.drop("main_water_heaters", axis=1)
+
+
+def processing_lower_floor_material(df):
+    df["lower_floor_material_concrete"] = df["lower_floor_material"].apply(
+        lambda x: type(x) == str and "concrete" in x
+    )
+    df["lower_floor_material_joist"] = df["lower_floor_material"].apply(
+        lambda x: type(x) == str and "joist" in x
+    )
+    df["lower_floor_material_wood"] = df["lower_floor_material"].apply(
+        lambda x: type(x) == str and "ood" in x
+    )
+    df["lower_floor_material_brick"] = df["lower_floor_material"].apply(
+        lambda x: type(x) == str and "brick" in x
+    )
+    df["lower_floor_material_metal"] = df["lower_floor_material"].apply(
+        lambda x: type(x) == str and "metal" in x
+    )
+    return df.drop("lower_floor_material", axis=1)
+
+
 def processing_balcony_depth(df):
     values = {np.nan: 0, "< 1 m": 1, "1 <= … < 2": 2, "2 <= … < 3": 3, "3 <=": 4}
     df["balcony_depth"] = df["balcony_depth"].map(values)
