@@ -526,9 +526,10 @@ def processing_window_orientation(df):
 
 
 def processing_nb_parking_spaces(df):
-    df["nb_parking_spaces"] = df.mask(
-        (df["building_type"] == "House") & (df["nb_parking_spaces"] > 4), 4
-    ).fillna(0)
+    df.loc[df["building_type"] == "House", "nb_parking_spaces"] = df.loc[
+        df["building_type"] == "House", "nb_parking_spaces"
+    ].clip(upper=4)
+    df["nb_parking_spaces"] = df["nb_parking_spaces"].fillna(0)
     return df
 
 
@@ -551,24 +552,47 @@ def processing_roof_materials(df):
     return df
 
 
+def processing_clay_risk_level(df):
+    dic_inertia = {"low": 0, "medium": 1, "high": 2}
+    df["clay_risk_level"] = df["clay_risk_level"].map(dic_inertia).fillna(1)
+    return df
+
+
+def processing_new_features(df):
+    df["living_to_building_area_ratio"] = (
+        df["living_area_sqft"] / df["building_total_area_sqft"]
+    )
+    df["wall_area_by_conductivity"] = (
+        4
+        * df["building_total_area_sqft"].apply(np.sqrt)
+        * df["building_height_ft"]
+        * df["outer_wall_thickness"]
+        * df["outer_wall_thermal_conductivity"]
+    )
+    return df
+
+
 class FeatureExtractor(BaseEstimator):
     def fit(self, X, y):
         return self
 
     def transform(self, X):
         processing_functions_list = [
+            processing_upper_conductivity,
             processing_additional_heat_generators,
             processing_additional_water_heaters,
             processing_balcony_depth,
             processing_bearing_wall,
             processing_building_category,
             processing_building_class,
+            processing_clay_risk_level,
             processing_consumption_measurement_date,
             processing_crossing_building,
             processing_heat_generators,
             processing_heating_energy_source,
             processing_heating_type,
             processing_lower_conductivity,
+            processing_lower_floor_material,
             processing_main_heating_type,
             processing_nb_parking_spaces,
             processing_outer_thickness,
@@ -577,7 +601,6 @@ class FeatureExtractor(BaseEstimator):
             processing_renewable_energy_sources,
             processing_roof_materials,
             processing_thermal_inertia,
-            processing_upper_conductivity,
             processing_upper_floor_adjacency_type,
             processing_ventilation_type,
             processing_wall_insulation_type,
@@ -589,6 +612,7 @@ class FeatureExtractor(BaseEstimator):
             processing_window_glazing_type,
             processing_window_orientation,
             processing_years,
+            processing_new_features,
         ]
         X = X.copy()
         for function in processing_functions_list:

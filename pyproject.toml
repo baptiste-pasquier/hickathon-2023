@@ -8,13 +8,12 @@ packages = [{include = "hickathon_2023", from = "src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4.0"
-numpy = "1.22.1"
-pandas = "1.2.5"
+numpy = "1.23.5"
+pandas = "1.5.2"
 matplotlib = "3.3.4"
 seaborn = "0.11.2"
-plotly = "5.3.1"
-scikit-learn = "1.1.1"
-xgboost = "^1.7.3"
+scikit-learn = "1.2.0"
+xgboost = "1.7.3"
 
 
 [tool.poetry.group.dev.dependencies]

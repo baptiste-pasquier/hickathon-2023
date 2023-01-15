@@ -1,10 +1,12 @@
 area_code
 building_type
 building_use_type_code
-clay_risk_level
 heating_type
+lower_floor_adjacency_type
+lower_floor_insulation_type
 main_heating_device
 main_heating_fuel
+main_water_heaters
 radon_risk_level
 roof_material
 thermal_inertia

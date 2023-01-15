@@ -41,7 +41,15 @@ heating_source_wood
 heating_type
 is_crossing_building
 living_area_sqft
+living_to_building_area_ratio
 lowe_floor_thermal_conductivity
+lower_floor_adjacency_type
+lower_floor_insulation_type
+lower_floor_material_brick
+lower_floor_material_concrete
+lower_floor_material_joist
+lower_floor_material_metal
+lower_floor_material_wood
 lower_year_building
 main_heating_device
 main_heating_fuel
@@ -49,7 +57,9 @@ main_water_heaters
 nb_commercial_units
 nb_dwellings
 nb_housing_units
+nb_meters
 nb_parking_spaces
+nb_units_total
 number_of_fronts
 outer_wall_hollow
 outer_wall_thermal_conductivity
@@ -65,6 +75,7 @@ upper_floor_LNC
 upper_floor_thermal_conductivity
 upper_year_building
 ventilation_type
+wall_area_by_conductivity
 wall_insulation_external
 wall_insulation_insulated
 wall_insulation_internal
