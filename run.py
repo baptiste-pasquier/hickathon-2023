@@ -33,13 +33,13 @@ if __name__ == "__main__":
 
     # Loading datasets
     if args.small:
-        log.info("Loading big datasets")
-        datasets_path = Path("datasets/small/")
-        trained_model_path = Path("trained_model/small/trained_model.pickle")
-    else:
         log.info("Loading small datasets")
+        datasets_path = Path("datasets/small/")
+        trained_model_path = Path("trained_model/trained_model.pickle")
+    else:
+        log.info("Loading big datasets")
         datasets_path = "datasets/"
-        trained_model_path = Path("/trained_model/trained_model.pickle")
+        trained_model_path = Path("trained_model/trained_model.pickle")
 
     # Creating trained_model folder
     trained_model_path.parents[0].mkdir(parents=True, exist_ok=True)
@@ -68,11 +68,12 @@ if __name__ == "__main__":
     # Predicting
     if args.predict:
         X_path = Path(datasets_path, "test/test_features_sent.csv")
-        log.info(f"Loading {X_path}")
+        log.info(f"Loading X_test from {X_path}")
         X_test, _ = load_data(X_path=X_path)
 
         if not trained_model_path.exists():
             raise Exception("No trained model found. Please run --train command")
+        log.info(f"Loading trained model from {trained_model_path}")
         with open(trained_model_path, "rb") as f:
             model = pickle.load(f)
 
