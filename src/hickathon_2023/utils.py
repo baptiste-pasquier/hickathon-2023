@@ -16,10 +16,11 @@ def load_data(X_path, y_path=None, y_feature=None):
     df_X = pd.read_csv(X_path, low_memory=False)
 
     for column in df_X.columns:
-        if df_X[column].dtype == np.int64:
-            df_X[column] = df_X[column].astype(np.int16)
-        if df_X[column].dtype == np.float64:
-            df_X[column] = df_X[column].astype(np.float32)
+        if column != "level_0":
+            if df_X[column].dtype == np.int64:
+                df_X[column] = df_X[column].astype(np.int16)
+            if df_X[column].dtype == np.float64:
+                df_X[column] = df_X[column].astype(np.float32)
 
     if y_path:
         if y_feature is None:
