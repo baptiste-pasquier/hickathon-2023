@@ -12,21 +12,60 @@ from hickathon_2023.utils import Pipeline
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
-    def __init__(self, features):
+    """Select some features."""
+
+    def __init__(self, features: "list[str]"):
+        """Init FeatureSelector.
+
+        Parameters
+        ----------
+        features : list[str]
+            List of columns to select
+        """
         if not isinstance(features, list):
             self.features = [features]
         else:
             self.features = features
 
-    def fit(self, X: pd.DataFrame, y=None):
+    def fit(self, X, y):
+        """Fit on data."""
         return self
 
     def transform(self, X: pd.DataFrame):
+        """Transform data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input data
+
+        Returns
+        -------
+        pd.DataFrame
+            Output data
+        """
         X = X.copy()
         return X[self.features]
 
 
-def convert_dtypes(df):
+def convert_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert columns data types.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input data
+
+    Returns
+    -------
+    pd.DataFrame
+        Output data
+
+    Raises
+    ------
+    ValueError
+        Unknown dtype
+    """
     for column, dtype in FEATURES_DTYPES.items():
         if dtype == "np.int8":
             df[column] = df[column].astype(np.int8)
@@ -37,7 +76,19 @@ def convert_dtypes(df):
     return df
 
 
-def rename_columns(df):
+def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Simplify column names.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input data
+
+    Returns
+    -------
+    pd.DataFrame
+        Output data
+    """
     columns = df.columns.to_list()
     for i in range(len(columns)):
         for elem in [
@@ -53,8 +104,14 @@ def rename_columns(df):
     return df
 
 
-def get_data_preprocessor():
+def get_data_preprocessor() -> Pipeline:
+    """Create a Scikit-Learn pipeline for data preprocessing.
 
+    Returns
+    -------
+    Pipeline
+        Data preprocessing pipeline
+    """
     selector = FeatureSelector(features=FEATURES)
 
     inputer = ColumnTransformer(

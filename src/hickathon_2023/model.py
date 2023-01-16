@@ -5,8 +5,14 @@ from hickathon_2023.feature_extraction import FeatureExtractor
 from hickathon_2023.utils import Pipeline
 
 
-def get_model():
+def get_model() -> Pipeline:
+    """Create a Scikit-Learn pipeline model.
 
+    Returns
+    -------
+    Pipeline
+        Pipeline model
+    """
     feature_extractor = FeatureExtractor()
     data_preprocessor = get_data_preprocessor()
 

@@ -1,10 +1,24 @@
 from datetime import datetime
 
 import numpy as np
-from sklearn.base import BaseEstimator
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
-def processing_bearing_wall(df):
+def processing_bearing_wall(df: pd.DataFrame) -> pd.DataFrame:
+    """Add 9 new bool columns for each bearing wall material
+    and delete `bearing_wall`
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     df["bearing_wall_concrete"] = df["bearing_wall_material"].apply(
         lambda x: type(x) != float and "CONC" in x
     )
@@ -38,7 +52,21 @@ def processing_bearing_wall(df):
     return df.drop("bearing_wall_material", axis=1)
 
 
-def processing_main_heating_type(df):
+def processing_main_heating_type(df: pd.DataFrame) -> pd.DataFrame:
+    """Add new columns `main_heating_device` (e.g. boiler, radiator, etc.)
+    and `main_heating_fuel` (e.g. oil, wood, etc.)
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
+
     def aux_device(x):
         if "boil" in x:
             return "boil"
@@ -74,7 +102,21 @@ def processing_main_heating_type(df):
     return df.drop("main_heat_generators", axis=1)
 
 
-def processing_main_water_heaters(df):
+def processing_main_water_heaters(df: pd.DataFrame) -> pd.DataFrame:
+    """Add new columns `main_water_heating_device` (e.g. boiler, heat pump, etc.)
+    and `main_water_heating_fuel` (e.g. oil, wood, etc.)
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
+
     def aux_device(x):
         if type(x) == str:
             if "boil" in x:
@@ -106,7 +148,20 @@ def processing_main_water_heaters(df):
     return df.drop("main_water_heaters", axis=1)
 
 
-def processing_lower_floor_material(df):
+def processing_lower_floor_material(df: pd.DataFrame) -> pd.DataFrame:
+    """Find all the materials in the lower floor and fills material
+    columns with booleans.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     df["lower_floor_material_concrete"] = df["lower_floor_material"].apply(
         lambda x: type(x) == str and "concrete" in x
     )
@@ -125,13 +180,39 @@ def processing_lower_floor_material(df):
     return df.drop("lower_floor_material", axis=1)
 
 
-def processing_balcony_depth(df):
+def processing_balcony_depth(df: pd.DataFrame) -> pd.DataFrame:
+    """Categorical encoding of `balcony_depth` with
+    nan management: nan means no balcony, category 0.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     values = {np.nan: 0, "< 1 m": 1, "1 <= … < 2": 2, "2 <= … < 3": 3, "3 <=": 4}
     df["balcony_depth"] = df["balcony_depth"].map(values)
     return df
 
 
-def processing_window_glazing_type(df):
+def processing_window_glazing_type(df: pd.DataFrame) -> pd.DataFrame:
+    """Categorical encoding for `window_glazing_type`.
+    Nan management: most frequent category (double glazing, 1).
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     values = {
         np.nan: 1,  # if nan assign to most frequent class
         "single glazing": 0,
@@ -144,7 +225,20 @@ def processing_window_glazing_type(df):
     return df
 
 
-def processing_window_frame_material(df):
+def processing_window_frame_material(df: pd.DataFrame) -> pd.DataFrame:
+    """Find the main window frame material. Nan management: class -1.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
+
     def aux(x):
         materials = ["pvc", "wood", "metal", "with thermal", "poly", "glass"]
         ret, i = False, 0
@@ -158,13 +252,26 @@ def processing_window_frame_material(df):
     return df
 
 
-def processing_window_filling_type(df):
+def processing_window_filling_type(df: pd.DataFrame) -> pd.DataFrame:
+    """Categorical encoding for window filling type.
+    Nan management: value 0.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     values = {np.nan: 0, "dry air": 1, "argon or krypton": 2}
     df["window_filling_type"] = df["window_filling_type"].map(values)
     return df
 
 
-def processing_water_heating_type(df):
+def processing_water_heating_type(df: pd.DataFrame) -> pd.DataFrame:
     values = {
         np.nan: False,
         "individual": False,
@@ -174,7 +281,7 @@ def processing_water_heating_type(df):
     return df
 
 
-def processing_heating_type(df):
+def processing_heating_type(df: pd.DataFrame) -> pd.DataFrame:
     values = {
         np.nan: False,
         "individual": False,
@@ -184,7 +291,7 @@ def processing_heating_type(df):
     return df
 
 
-def processing_water_heaters(df):
+def processing_water_heaters(df: pd.DataFrame) -> pd.DataFrame:
     df["water_heater_boiler"] = df["water_heaters"].apply(
         lambda x: x.count("boiler") if type(x) == str else 0
     )
@@ -197,7 +304,7 @@ def processing_water_heaters(df):
     return df.drop("water_heaters", axis=1)
 
 
-def processing_water_heating_energy_source(df):
+def processing_water_heating_energy_source(df: pd.DataFrame) -> pd.DataFrame:
     df["water_heating_oil"] = df["water_heating_energy_source"].apply(
         lambda x: type(x) != float and "oil" in x
     )
@@ -219,7 +326,7 @@ def processing_water_heating_energy_source(df):
     return df.drop("water_heating_energy_source", axis=1)
 
 
-def processing_ventilation_type(df):
+def processing_ventilation_type(df: pd.DataFrame) -> pd.DataFrame:
     values = {
         np.nan: 0,
         "humidity sensitive mechanical gas ventilation": 0,
@@ -242,7 +349,7 @@ def processing_ventilation_type(df):
     return df
 
 
-def processing_wall_insulation_type(df):
+def processing_wall_insulation_type(df: pd.DataFrame) -> pd.DataFrame:
     df["wall_insulation_mob"] = df["wall_insulation_type"].apply(
         lambda x: type(x) != float and "MOB" in x
     )
@@ -261,7 +368,7 @@ def processing_wall_insulation_type(df):
     return df.drop("wall_insulation_type", axis=1)
 
 
-def processing_building_category(df):
+def processing_building_category(df: pd.DataFrame) -> pd.DataFrame:
     df["building_category_condo"] = df["building_category"].apply(
         lambda x: x.count("condo") if type(x) == str else 0
     )
@@ -271,7 +378,7 @@ def processing_building_category(df):
     return df.drop("building_category", axis=1)
 
 
-def processing_building_class(df):
+def processing_building_class(df: pd.DataFrame) -> pd.DataFrame:
     df["building_class_indiv"] = df["building_class"].apply(
         lambda x: x.count("in") if type(x) == str else 0
     )
@@ -284,7 +391,7 @@ def processing_building_class(df):
     return df.drop("building_class", axis=1)
 
 
-def processing_heating_energy_source(df):
+def processing_heating_energy_source(df: pd.DataFrame) -> pd.DataFrame:
     df["heating_source_oil"] = df["heating_energy_source"].apply(
         lambda x: type(x) != float and ("oil" in x or "fuel" in x or "fioul" in x)
     )
@@ -306,7 +413,7 @@ def processing_heating_energy_source(df):
     return df.drop("heating_energy_source", axis=1)
 
 
-def processing_heat_generators(df):
+def processing_heat_generators(df: pd.DataFrame) -> pd.DataFrame:
     df["heat_generators_boiler"] = df["heat_generators"].apply(
         lambda x: x.count("boiler") if type(x) == str else 0
     )
@@ -325,7 +432,7 @@ def processing_heat_generators(df):
     return df.drop("heat_generators", axis=1)
 
 
-def processing_additional_heat_generators(df):
+def processing_additional_heat_generators(df: pd.DataFrame) -> pd.DataFrame:
     df["add_heat_generators_boiler"] = df["additional_heat_generators"].apply(
         lambda x: "boiler" in x
     )
@@ -338,7 +445,7 @@ def processing_additional_heat_generators(df):
     return df.drop("additional_heat_generators", axis=1)
 
 
-def processing_additional_water_heaters(df):
+def processing_additional_water_heaters(df: pd.DataFrame) -> pd.DataFrame:
     df["add_water_heater_electric"] = df["additional_water_heaters"].apply(
         lambda x: type(x) != float and "electric" in x
     )
@@ -351,14 +458,14 @@ def processing_additional_water_heaters(df):
     return df.drop("additional_water_heaters", axis=1)
 
 
-def processing_renewable_energy_sources(df):
+def processing_renewable_energy_sources(df: pd.DataFrame) -> pd.DataFrame:
     df["renewable_energy_sources"] = df["renewable_energy_sources"].apply(
         lambda x: 1 + x.count("+") if type(x) == str else 0
     )
     return df
 
 
-def processing_crossing_building(df):
+def processing_crossing_building(df: pd.DataFrame) -> pd.DataFrame:
     values_fronts = {
         np.nan: 2,
         "crossing east west": 2,
@@ -388,7 +495,7 @@ def processing_crossing_building(df):
     return df
 
 
-def processing_consumption_measurement_date(df):
+def processing_consumption_measurement_date(df: pd.DataFrame) -> pd.DataFrame:
     zero = datetime.strptime("2013-01-01", "%Y-%m-%d")
     one = datetime.strptime("2021-01-01", "%Y-%m-%d")
 
@@ -400,14 +507,14 @@ def processing_consumption_measurement_date(df):
     return df
 
 
-def processing_outer_wall_materials(df):
+def processing_outer_wall_materials(df: pd.DataFrame) -> pd.DataFrame:
     df["outer_wall_hollow"] = df["outer_wall_materials"].apply(
         lambda x: type(x) != float and "hollow" in x
     )
     return df.drop("outer_wall_materials", axis=1)
 
 
-def processing_years(df):
+def processing_years(df: pd.DataFrame) -> pd.DataFrame:
     dic_year_lower = {
         "1949-1970": 1949,
         "1970-1988": 1970,
@@ -442,7 +549,7 @@ def processing_years(df):
     return df.drop("building_period", axis=1)
 
 
-def processing_upper_conductivity(df):
+def processing_upper_conductivity(df: pd.DataFrame) -> pd.DataFrame:
     df["upper_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
         df.groupby(["upper_floor_insulation_type"])[
             "upper_floor_thermal_conductivity"
@@ -459,7 +566,7 @@ def processing_upper_conductivity(df):
     return df.drop("upper_floor_material", axis=1)
 
 
-def processing_lower_conductivity(df):
+def processing_lower_conductivity(df: pd.DataFrame) -> pd.DataFrame:
     df["lowe_floor_thermal_conductivity"] = df.lowe_floor_thermal_conductivity.fillna(
         df.groupby(["lower_floor_insulation_type"])[
             "lowe_floor_thermal_conductivity"
@@ -476,13 +583,13 @@ def processing_lower_conductivity(df):
     return df
 
 
-def processing_thermal_inertia(df):
+def processing_thermal_inertia(df: pd.DataFrame) -> pd.DataFrame:
     dic_inertia = {"low": 0, "medium": 1, "high": 2, "very high": 3}
     df["thermal_inertia"] = df["thermal_inertia"].map(dic_inertia).fillna(0)
     return df
 
 
-def processing_outer_thickness(df):
+def processing_outer_thickness(df: pd.DataFrame) -> pd.DataFrame:
     def get_thickness(thickness):
         try:
             return float(thickness[:2])
@@ -498,18 +605,18 @@ def processing_outer_thickness(df):
     return df
 
 
-def processing_upper_floor_adjacency_type(df):
+def processing_upper_floor_adjacency_type(df: pd.DataFrame) -> pd.DataFrame:
     df["upper_floor_LNC"] = df["upper_floor_adjacency_type"] == "LNC"
     return df.drop("upper_floor_adjacency_type", axis=1)
 
 
-def processing_radon(df):
+def processing_radon(df: pd.DataFrame) -> pd.DataFrame:
     dic_radon = {"low": 0, "medium": 1, "high": 2}
     df["radon_risk_level"] = df["radon_risk_level"].map(dic_radon).fillna(1)
     return df
 
 
-def processing_window_orientation(df):
+def processing_window_orientation(df: pd.DataFrame) -> pd.DataFrame:
     df["window_orientation_north"] = df["window_orientation"].apply(
         lambda x: type(x) != float and ("north" in x or "nord" in x)
     )
@@ -525,7 +632,7 @@ def processing_window_orientation(df):
     return df.drop("window_orientation", axis=1)
 
 
-def processing_nb_parking_spaces(df):
+def processing_nb_parking_spaces(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[df["building_type"] == "House", "nb_parking_spaces"] = df.loc[
         df["building_type"] == "House", "nb_parking_spaces"
     ].clip(upper=4)
@@ -533,7 +640,7 @@ def processing_nb_parking_spaces(df):
     return df
 
 
-def processing_roof_materials(df):
+def processing_roof_materials(df: pd.DataFrame) -> pd.DataFrame:
     values = {
         np.nan: "OTHERS",
         "TILES - ZINC ALUMINUM": "TILES",
@@ -552,13 +659,38 @@ def processing_roof_materials(df):
     return df
 
 
-def processing_clay_risk_level(df):
+def processing_clay_risk_level(df: pd.DataFrame) -> pd.DataFrame:
+    """Change `clay_risk` column modalities to integers and
+    fill missing values (most frequent class).
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     dic_inertia = {"low": 0, "medium": 1, "high": 2}
     df["clay_risk_level"] = df["clay_risk_level"].map(dic_inertia).fillna(1)
     return df
 
 
-def processing_new_features(df):
+def processing_new_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Add new columns `living_to_building_area_ratio` and `wall_area_by_conductivity`.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Output DataFrame
+    """
     df["living_to_building_area_ratio"] = (
         df["living_area_sqft"] / df["building_total_area_sqft"]
     )
@@ -572,11 +704,26 @@ def processing_new_features(df):
     return df
 
 
-class FeatureExtractor(BaseEstimator):
+class FeatureExtractor(BaseEstimator, TransformerMixin):
+    """Feature extraction class."""
+
     def fit(self, X, y):
+        """Fit on data."""
         return self
 
     def transform(self, X):
+        """Transform data.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Input data
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_features_new)
+            Transformed data
+        """
         processing_functions_list = [
             processing_upper_conductivity,
             processing_additional_heat_generators,

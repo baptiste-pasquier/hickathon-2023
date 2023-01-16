@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -12,7 +15,30 @@ from sklearn.utils.validation import check_memory
 log = logging.getLogger(__name__)
 
 
-def load_data(X_path, y_path=None, y_feature=None):
+def load_data(
+    X_path: Path, y_path: Path | None = None, y_feature: str | None = None
+) -> tuple[pd.DataFrame, pd.Series | None]:
+    """Load data with reduced storage memory.
+
+    Parameters
+    ----------
+    X_path : Path
+        X data file location
+    y_path : Path | None, optional
+        y data file location, by default None
+    y_feature : str | None, optional
+        y column name, by default None
+
+    Returns
+    -------
+    tuple[pd.DataFrame, pd.Series | None]
+        X DataFrame, y Serie if `y_path` is provided
+
+    Raises
+    ------
+    ValueError
+        `y_feature` must be defined when loading y data
+    """
     df_X = pd.read_csv(X_path, low_memory=False)
 
     for column in df_X.columns:
@@ -24,7 +50,7 @@ def load_data(X_path, y_path=None, y_feature=None):
 
     if y_path:
         if y_feature is None:
-            raise ValueError("y_pred_name must be defined")
+            raise ValueError("y_feature must be defined")
         y = pd.read_csv(y_path)[y_feature]
     else:
         y = None
@@ -33,7 +59,10 @@ def load_data(X_path, y_path=None, y_feature=None):
 
 
 class Pipeline(sklearn.pipeline.Pipeline):
+    """Scikit-Learn Pipeline with logging."""
+
     def __init__(self, steps, *, memory=None, verbose=False):
+        """Init Pipeline."""
         self.steps = steps
         self.memory = memory
         self.verbose = verbose
